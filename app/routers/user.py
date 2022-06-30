@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
-from app.schemas import User,UserId
+from app.schemas import User,UserId, showUser
 from app.db.database import get_db
 from sqlalchemy.orm import Session
 from app.db import models
-
+from typing import List
 router = APIRouter(
     prefix='/user',
     tags=['users']
@@ -11,15 +11,11 @@ router = APIRouter(
 
 usuarios = []
 
-@router.get('/ruta1')
-def ruta1():
-    return {'mensaje':'Bienvenido a tu primera App'}
-
-@router.get('/')
+@router.get('/',response_model=List[showUser])
 def obtener_usuarios(db:Session = Depends(get_db)):
     data = db.query(models.User).all()
     print(data)
-    return usuarios
+    return data
 
 @router.post('/')
 def crear_usuario(user:User,db:Session = Depends(get_db)):
@@ -39,12 +35,12 @@ def crear_usuario(user:User,db:Session = Depends(get_db)):
     # usuarios.append(usuario)
     return {'respuesta':'Usuario creado correctamente'}
 
-@router.post('/{user_id}')
-def obtener_usuario(user_id:int):
-    for user in usuarios:
-        if user['id'] == user_id:
-            return {'usuario':user}
-    return {'respuesta':'Usuario no encontrado!'}
+@router.get('/{user_id}',response_model=showUser)
+def obtener_usuario(user_id:int,db:Session = Depends(get_db)):
+    usuario = db.query(models.User).filter(models.User.id==user_id).first()
+    if not usuario:
+        return {'respuesta':'Usuario no encontrado!'}
+    return usuario
 
 @router.post('/obtener_usuario')
 def obtener_usuario2(user_id:UserId):
@@ -54,12 +50,18 @@ def obtener_usuario2(user_id:UserId):
     return {'respuesta':'Usuario no encontrado!'}
 
 @router.delete('/{user_id}')
-def eliminar_usuario(user_id:int):
-    for index,user in enumerate(usuarios):
-        if user['id'] == user_id:
-            usuarios.pop(index)
-            return {'respuesta':'Usuario eliminado correctamente'}
-    return {'respuesta':'Usuario no encontrado!'}
+def eliminar_usuario(user_id:int,db:Session = Depends(get_db)):
+    usuario = db.query(models.User).filter(models.User.id==user_id)
+    if not usuario.first():
+        return {'respuesta':'Usuario no encontrado!'}
+    usuario.delete(synchronize_session=False)
+    db.commit()
+    return {'respuesta':'Usuario eliminado correctamente'}
+    # for index,user in enumerate(usuarios):
+    #     if user['id'] == user_id:
+    #         usuarios.pop(index)
+    #         return {'respuesta':'Usuario eliminado correctamente'}
+    # return {'respuesta':'Usuario no encontrado!'}
 
 @router.put('/{user_id}')
 def actualizar_usuario(user_id:int, updateUser:User):

@@ -15,3 +15,10 @@ class User(BaseModel):
 
 class UserId(BaseModel):
     id:int
+
+class showUser(BaseModel):
+    username:str
+    nombre:str
+    correo:str
+    class Config():
+        orm_mode = True
