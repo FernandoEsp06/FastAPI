@@ -22,9 +22,21 @@ def obtener_usuarios(db:Session = Depends(get_db)):
     return usuarios
 
 @router.post('/')
-def crear_usuario(user:User):
+def crear_usuario(user:User,db:Session = Depends(get_db)):
     usuario = user.dict()
-    usuarios.append(usuario)
+    nuevo_usuario = models.User(
+        username=usuario['username'],
+        password=usuario['password'],
+        nombre=usuario['nombre'],
+        apellido=usuario['apellido'],
+        direccion=usuario['direccion'],
+        telefono=usuario['telefono'],
+        correo=usuario['correo']
+    )
+    db.add(nuevo_usuario)
+    db.commit()
+    db.refresh(nuevo_usuario)
+    # usuarios.append(usuario)
     return {'respuesta':'Usuario creado correctamente'}
 
 @router.post('/{user_id}')
