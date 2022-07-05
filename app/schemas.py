@@ -13,8 +13,16 @@ class User(BaseModel):
     correo:str
     creacion:datetime = datetime.now()
 
-class UserId(BaseModel):
-    id:int
+class UpdateUser(BaseModel):
+    username:str =None
+    password:str = None
+    nombre:str = None
+    apellido:str = None
+    direccion:str = None
+    telefono:int = None
+    correo:str = None
+    creacion:datetime = datetime.now()
+
 
 class showUser(BaseModel):
     username:str
